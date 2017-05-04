@@ -4,6 +4,7 @@ from serial import SerialException
 
 ARDUINO_PORT = '/dev/ttyUSB0'
 BAUD_RATE = 9600
+ser = None
 
 def main():
   isConnected = False
