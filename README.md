@@ -9,6 +9,6 @@ More about this creation can be found here: https://dreams.midburn.org/dreams/87
 We're using https://github.com/pyserial/pyserial to communicate between the pi and the arduino
 
 ```
-On the pi
+On the Pi
 pip install pyserial
 ```
