@@ -1,6 +1,8 @@
 import time
 import serial
+import os
 from serial import SerialException 
+from daemonize import Daemonize
 
 ARDUINO_PORT = '/dev/ttyUSB0'
 BAUD_RATE = 9600
@@ -48,4 +50,7 @@ def main():
   burnerunway.close()
 
 if __name__ == "__main__":
-  main()
+  myname=os.path.basename(sys.argv[0])
+  pidfile='/tmp/%s' % myname
+  daemon = Daemonize(app=myname,pid=pidfile, action=main)
+  daemon.start()
