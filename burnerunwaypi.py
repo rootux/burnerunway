@@ -16,6 +16,7 @@ class Burnerunway(object):
     self.currentEffectCount = 0
     self.music = Sound("/home/pi/burnerunway/music/on_the_catwalk.wav")
     self.effect1 = Sound("/home/pi/burnerunway/music/work_it_baby.wav")
+    self.channel = None
 
   def tryToConnect(self):
     try:
