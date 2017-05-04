@@ -16,8 +16,6 @@ class Burnerunway(object):
     self.currentEffectCount = 0
     self.music = Sound("/home/pi/burnerunway/music/on_the_catwalk.wav")
     self.effect1 = Sound("/home/pi/burnerunway/music/work_it_baby.wav")
-    self.isPlaying = False
-    self.channel = None
 
   def tryToConnect(self):
     try:
@@ -34,7 +32,7 @@ class Burnerunway(object):
       line = self.ser.readline()
       if "Motion detected" in line:
         self.currentEffectCount+=1
-        if not (self.channel && self.channel.get_busy()):
+	      if not (self.channel and self.channel.get_busy()):
           print "Playing music"
           self.channel = self.music.play()
         
