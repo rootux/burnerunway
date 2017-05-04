@@ -5,32 +5,37 @@ from serial import SerialException
 ARDUINO_PORT = '/dev/ttyUSB0'
 BAUD_RATE = 9600
 
+class Burnerunway(object):
+
+  def __init__(self):
+    self.ser = None
+
+  def tryToConnect(self):
+    try:
+      self.ser = serial.Serial(ARDUINO_PORT, BAUD_RATE)
+      print "Connected!"
+      return True
+    except SerialException as se:
+      print "Cant connect. sleeping for 2 seconds and retrying"
+      time.sleep(2)
+      return False
+
+  def tryToRead(self):
+    try:
+      line = self.ser.readline()
+      print line
+    except SerialException as se:
+      print "Oops. probably arduino got disconnected"
+      print se
+
 def main():
-  ser = None
   isConnected = False
+  burnerunway = Burnerunway() 
   while not isConnected:
-    isConnected = tryToConnect(ser)
+    isConnected = burnerunway.tryToConnect()
 
   while 1:
-    tryToRead(ser)
-
-def tryToConnect(ser):
-  try:
-    ser = serial.Serial(ARDUINO_PORT, BAUD_RATE)
-    print "Connected!"
-    return True
-  except SerialException as se:
-    print "Cant connect. sleeping for 2 seconds and retrying"
-    time.sleep(2)
-    return False
-
-def tryToRead(ser):
-  try:
-    line = ser.readline()
-    print line
-  except SerialException as se:
-    print "Oops. probably arduino got disconnected"
-    print se
+    burnerunway.tryToRead()
 
 if __name__ == "__main__":
   main()
