@@ -4,17 +4,17 @@ from serial import SerialException
 
 ARDUINO_PORT = '/dev/ttyUSB0'
 BAUD_RATE = 9600
-ser = None
 
 def main():
+  ser = None
   isConnected = False
   while not isConnected:
-    isConnected = tryToConnect()
+    isConnected = tryToConnect(ser)
 
   while 1:
-    tryToRead()
+    tryToRead(ser)
 
-def tryToConnect():
+def tryToConnect(ser):
   try:
     ser = serial.Serial(ARDUINO_PORT, BAUD_RATE)
     print "Connected!"
@@ -24,7 +24,7 @@ def tryToConnect():
     time.sleep(2)
     return False
 
-def tryToRead():
+def tryToRead(ser):
   try:
     line = ser.readline()
     print line
