@@ -16,6 +16,7 @@ class Burnerunway(object):
     self.currentEffectCount = 0
     self.music = Sound("music/on_the_catwalk.wav")
     self.effect1 = Sound("music/work_it_baby.wav")
+    self.isPlaying = False
 
   def tryToConnect(self):
     try:
@@ -31,11 +32,13 @@ class Burnerunway(object):
     try:
       line = self.ser.readline()
       if "Motion detected" in line:
-        print "Playing music"
         self.currentEffectCount+=1
-        if not self.music.get_busy():
+        if not self.isPlaying:
+	  self.isPlaying = True
+          print "Playing music"
           self.music.play()
-        if(self.currentEffectCount % PLAY_EFFECT_EACH):
+        
+	if(self.currentEffectCount % PLAY_EFFECT_EACH == 0):
           self.effect1.play()
 
       print line
