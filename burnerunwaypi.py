@@ -14,9 +14,10 @@ class Burnerunway(object):
     self.ser = None
     pygame.mixer.init()
     self.currentEffectCount = 0
-    self.music = Sound("music/on_the_catwalk.wav")
-    self.effect1 = Sound("music/work_it_baby.wav")
+    self.music = Sound("/home/pi/burnerunway/music/on_the_catwalk.wav")
+    self.effect1 = Sound("/home/pi/burnerunway/music/work_it_baby.wav")
     self.isPlaying = False
+    self.channel = None
 
   def tryToConnect(self):
     try:
@@ -33,10 +34,9 @@ class Burnerunway(object):
       line = self.ser.readline()
       if "Motion detected" in line:
         self.currentEffectCount+=1
-        if not self.isPlaying:
-	  self.isPlaying = True
+        if not (self.channel && self.channel.get_busy()):
           print "Playing music"
-          self.music.play()
+          self.channel = self.music.play()
         
 	if(self.currentEffectCount % PLAY_EFFECT_EACH == 0):
           self.effect1.play()
