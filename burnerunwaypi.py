@@ -6,12 +6,14 @@ from pygame.mixer import Sound
 
 ARDUINO_PORT = '/dev/ttyUSB0'
 BAUD_RATE = 9600
+PLAY_EFFECT_EACH = 3
 
 class Burnerunway(object):
 
   def __init__(self):
     self.ser = None
     pygame.mixer.init()
+    self.currentEffectCount = 0
     self.music = Sound("music/on_the_catwalk.wav")
     self.effect1 = Sound("music/work_it_baby.wav")
 
@@ -30,7 +32,11 @@ class Burnerunway(object):
       line = self.ser.readline()
       if "Motion detected" in line:
         print "Playing music"
-        self.music.play()
+        self.currentEffectCount+=1
+        if not self.music.get_busy():
+          self.music.play()
+        if(self.currentEffectCount % PLAY_EFFECT_EACH):
+          self.effect1.play()
 
       print line
     except SerialException as se:

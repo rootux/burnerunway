@@ -22,4 +22,6 @@ sudo apt-get install python-pip
 sudo pip install pyserial
 sudo pip install pygame
 git clone https://github.com/rootux/burnerunway
+sudo raspi-config
+Advanced-> Audio-> Force Jack
 ```
