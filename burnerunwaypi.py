@@ -52,10 +52,12 @@ class Burnerunway(object):
         self.ser.close()
       self.tryToConnect()
 
-  def readLineSafe():
+  def readLineSafe(self):
     try:
        line = self.ser.readline()
        return line
+    except KeyboardInterrupt:
+      raise
     except:
        return None
 
