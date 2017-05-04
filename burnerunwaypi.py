@@ -32,7 +32,7 @@ class Burnerunway(object):
       line = self.ser.readline()
       if "Motion detected" in line:
         self.currentEffectCount+=1
-	      if not (self.channel and self.channel.get_busy()):
+        if not (self.channel and self.channel.get_busy()):
           print "Playing music"
           self.channel = self.music.play()
         
