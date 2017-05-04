@@ -31,7 +31,9 @@ class Burnerunway(object):
 
   def tryToRead(self):
     try:
-      line = self.ser.readline()
+      line = self.readLineSafe()
+      if(line == None):
+        raise SerialException('Port not available')
       if "Motion detected" in line:
         self.currentEffectCount+=1
         if not (self.channel and self.channel.get_busy()):
@@ -49,6 +51,13 @@ class Burnerunway(object):
       if(self.ser):
         self.ser.close()
       self.tryToConnect()
+
+  def readLineSafe():
+    try:
+       line = self.ser.readline()
+       return line
+    except:
+       return None
 
   def close(self):
       if(self.ser):
