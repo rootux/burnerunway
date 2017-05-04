@@ -15,5 +15,5 @@ On the Pi
 ```
 sudo apt-get install python-pip
 sudo pip install pyserial
-sudo pip install daemonize
+sudo pip install pyglet
 ```

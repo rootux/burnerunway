@@ -1,8 +1,7 @@
 import time
 import serial
 from serial import SerialException 
-import pygame.mixer
-from pygame.mixer import Sound
+import pyglet
 
 ARDUINO_PORT = '/dev/ttyUSB0'
 BAUD_RATE = 9600
@@ -11,8 +10,8 @@ class Burnerunway(object):
 
   def __init__(self):
     self.ser = None
-    pygame.mixer.init()
-    self.music = Sound("music/on_the_catwalk.wav")
+    self.music = source = pyglet.media.load("music/on_the_catwalk.wav")
+    self.effect1 = pyglet.media.load("music/work_it_baby.wav")
 
   def tryToConnect(self):
     try:
@@ -30,7 +29,7 @@ class Burnerunway(object):
       if "Motion detected" in line:
         print "Playing music"
         self.music.play()
-        
+
       print line
     except SerialException as se:
       print "Oops. probably arduino got disconnected. sleeping for 0.5 second and retrying"
