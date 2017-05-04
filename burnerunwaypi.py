@@ -25,8 +25,9 @@ class Burnerunway(object):
       line = self.ser.readline()
       print line
     except SerialException as se:
-      print "Oops. probably arduino got disconnected"
+      print "Oops. probably arduino got disconnected. sleeping for 0.5 second and retrying"
       print se
+      time.sleep(0.5)
 
 def main():
   isConnected = False
