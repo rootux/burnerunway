@@ -1,7 +1,8 @@
 import time
 import serial
 from serial import SerialException 
-import pyglet
+import pygame.mixer
+from pygame.mixer import Sound
 
 ARDUINO_PORT = '/dev/ttyUSB0'
 BAUD_RATE = 9600
@@ -10,8 +11,9 @@ class Burnerunway(object):
 
   def __init__(self):
     self.ser = None
-    self.music = source = pyglet.media.load("music/on_the_catwalk.wav")
-    self.effect1 = pyglet.media.load("music/work_it_baby.wav")
+    pygame.mixer.init()
+    self.music = Sound("music/on_the_catwalk.wav")
+    self.effect1 = Sound("music/work_it_baby.wav")
 
   def tryToConnect(self):
     try:
