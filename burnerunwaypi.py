@@ -1,6 +1,6 @@
 import time
 import serial
-from serial import SerialException 
+from serial import SerialException, portNotOpenError
 import pygame.mixer
 from pygame.mixer import Sound
 
@@ -20,6 +20,7 @@ class Burnerunway(object):
 
   def tryToConnect(self):
     try:
+      print "Trying to connect to Arduino"
       self.ser = serial.Serial(ARDUINO_PORT, BAUD_RATE)
       print "Connected!"
       return True
@@ -37,13 +38,13 @@ class Burnerunway(object):
           print "Playing music"
           self.channel = self.music.play()
         
-	if(self.currentEffectCount % PLAY_EFFECT_EACH == 0):
+        if(self.currentEffectCount % PLAY_EFFECT_EACH == 0):
           self.effect1.play()
 
       print line
-    except SerialException as se:
+    except (SerialException, portNotOpenError) as e:
       print "Oops. probably arduino got disconnected. sleeping for 0.5 second and retrying"
-      print se
+      print e
       time.sleep(0.5)
       if(self.ser):
         self.ser.close()
