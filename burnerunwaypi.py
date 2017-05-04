@@ -28,7 +28,13 @@ class Burnerunway(object):
       print "Oops. probably arduino got disconnected. sleeping for 0.5 second and retrying"
       print se
       time.sleep(0.5)
+      if(self.ser):
+        self.ser.close()
       self.tryToConnect()
+
+  def close(self):
+      if(self.ser):
+        self.ser.close()
 
 def main():
   isConnected = False
@@ -38,6 +44,8 @@ def main():
 
   while 1:
     burnerunway.tryToRead()
+
+  burnerunway.close()
 
 if __name__ == "__main__":
   main()
