@@ -35,8 +35,4 @@ sudo update-rc.d superscript defaults
 sudo nano ~/.config/lxsession/LXDE-pi/autostart
 # Add this as last line
 @python /home/pi/burnerunway/burnerunwaypi.py
-
-sudo vim /etc/rc.local
-# Add this line to the end before the exit 0
-python /home/pi/burnerunway/burnerunwaypi.py
 ```
