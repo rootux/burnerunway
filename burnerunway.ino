@@ -4,10 +4,10 @@
 #define NUM_OF_CUBES 10
 #define NUM_LEDS_PER_STRIP 15
 #define NUM_OF_LEDS_PER_SIDE (NUM_OF_CUBES/2)
-#define BRIGHTNESS  90
-#define TURN_CUBE_OFF_AFTER_MS 7000
-#define END_OF_COURSE_ANIMATION_LENGTH 12000
-#define END_OF_COURSE_DELAY 20
+#define BRIGHTNESS  150
+#define TURN_CUBE_OFF_AFTER_MS 10000
+#define END_OF_COURSE_ANIMATION_LENGTH 30000
+#define DELAY_MAIN_LOOP 2
 
 #define LED_PIN_1 20
 #define LED_PIN_2 19
@@ -24,12 +24,30 @@ CRGBPalette16 animationPallete;
 int pirs[] = { 27, 29, 33, 35, 39, 41, 45, 47, 51, 53};
 //int pirs[] = { 27, 29, 33, 35};
 
+
+CRGB cubeColors[] = {
+  CRGB(25, 171,  1),
+  CRGB(255, 171,  1),
+  CRGB(209,  12,  1),
+  CRGB(140,   1,211),
+  CRGB( 126,  1,142),
+  CRGB(171,  1, 26),
+  CRGB( 224,  9,  1),
+  CRGB( 237,138,  1),
+  CRGB(52,173,  1),
+  CRGB(1,201,  1)
+};
+
+#define M_PI 3.141592653589793238462643
 #define SERIAL_SPEED 9600
 #define LED_TYPE    WS2812B
-#define COLOR_ORDER RGB
+#define COLOR_ORDER BRG
 
+//bool isEndOfCourseAnimation = true; //TODO
 bool isEndOfCourseAnimation = false;
-unsigned long endOfCourseAnimationStartMs = 0;
+unsigned long endOfCourseAnimationStartMs = 0; //TODO
+//unsigned long endOfCourseAnimationStartMs = millis();
+
 
 // How the led are sorted on each pir and mapped
 uint8_t mapLedToPir[] = {60, 45, 30, 15, 0, 0, 15, 30, 45, 60};
@@ -39,6 +57,53 @@ uint8_t currentAnimationPerLed[NUM_OF_CUBES];
 
 // Holds the time the pir was first turned on - The pir will turn off 10 seconds from that time
 unsigned long pirTurnedOnTimeInMs[NUM_OF_CUBES];
+
+
+// Gradient palette "magenta_gp", originally from
+// http://soliton.vm.bytemark.co.uk/pub/cpt-city/neota/base/tn/magenta.png.index.html
+// converted for FastLED with gammas (2.6, 2.2, 2.5)
+// Size: 20 bytes of program space.
+
+DEFINE_GRADIENT_PALETTE( PINKI ) {
+    0,   0,  0,  0,
+   61,  42,  0, 45,
+  172, 255,  0,255,
+  208, 255, 55,255,
+  255, 255,255,255
+ };
+
+
+// Gradient palette "green_gp", originally from
+// http://soliton.vm.bytemark.co.uk/pub/cpt-city/neota/base/tn/green.png.index.html
+// converted for FastLED with gammas (2.6, 2.2, 2.5)
+// Size: 28 bytes of program space.
+
+DEFINE_GRADIENT_PALETTE( GREENI ) {
+    0,   0,  0,  0,
+   63,   0, 17,  0,
+  126,   0, 82,  0,
+  155,   0,128,  0,
+  184,   0,186,  0,
+  219,  42,219, 45,
+  255, 255,255,255};
+
+
+
+DEFINE_GRADIENT_PALETTE( CUBE1_PATTERN) {
+    0, 126,  1,142,
+   71, 171,  1, 26,
+   122, 224,  9,  1,
+   168, 171,  1, 26,
+   255, 126,  1,142,
+};
+
+DEFINE_GRADIENT_PALETTE( CUBE2_PATTERN) {
+  0, 224,  9,  1,
+   71, 237,138,  1,
+   135,  52,173,  1,
+   168, 237,138,  1,
+   255, 224,  9,  1,
+};
 
 // Gradient palette "Geek_Black_White", originally from
 // http://soliton.vm.bytemark.co.uk/pub/cpt-city/heine/tn/GeeK07.png.index.html
@@ -100,11 +165,35 @@ DEFINE_GRADIENT_PALETTE( PURPLE_UNICORN ) {
   196,  24,  4, 31,
   255, 213,  9, 89};
 
+  DEFINE_GRADIENT_PALETTE( DARK_WEB ) {
+    0,  14,  1, 27,
+   48,  17,  1, 88,
+  104,   1, 88,156,
+  160,   1, 54, 42,
+  219,   9,235, 52,
+  255, 139,235,233};
+
+
+DEFINE_GRADIENT_PALETTE( rainbow_gp ) {
+    0, 126,  1,142,
+   25, 171,  1, 26,
+   48, 224,  9,  1,
+   71, 237,138,  1,
+   94,  52,173,  1,
+  117,   1,201,  1,
+  140,   1,211, 54,
+  163,   1,124,168,
+  186,   1,  8,149,
+  209,  12,  1,151,
+  232,  12,  1,151,
+  255, 171,  1,190};
+
 int pirStates[NUM_OF_CUBES];
 
 CRGB ledsFirst[NUM_LEDS_PER_STRIP * NUM_OF_LEDS_PER_SIDE];
 CRGB ledsSecond[NUM_LEDS_PER_STRIP * NUM_OF_LEDS_PER_SIDE];
 CRGB *currentArr = NULL;
+CRGB *currentArr2 = NULL;
 bool isLedOn[NUM_OF_CUBES];
 
 CRGBPalette16 currentPalette;
@@ -140,17 +229,17 @@ void setupLedStrips() {
     for(int i=0;i<NUM_LEDS_PER_STRIP;i++) {
       currentArr[i + mapLedToPir[stripIndex]] = CRGB::Black;
     }
-    delay(100);
+    delay(50);
     FastLED.show();
     for(uint8_t i=0;i< NUM_LEDS_PER_STRIP;i++) {
-      currentArr[i + ledToStartFrom] = CRGB(142,  40,  1);
+      currentArr[i + ledToStartFrom] = cubeColors[stripIndex];
     }
     FastLED.show();
-    delay(100);
+    delay(50);
     for(int i=0;i<NUM_LEDS_PER_STRIP;i++) {
       currentArr[i + mapLedToPir[stripIndex]] = CRGB::Black;
     }
-    delay(100);
+    delay(50);
     FastLED.show();
   }
   
@@ -181,10 +270,9 @@ void loop(){
   // Not end of course animatino
   for(int i=0;i<NUM_OF_CUBES; i++ ) {
     checkPir(i);
-
     //TODO: perhaps first check all pirs and then activate led program - not sure what is better
-    if(pirStates[i] == HIGH) {
-      FillLEDsFromPaletteColors(startIndex, Geek_Black_White, i, false);
+    if(pirStates[i] == HIGH || isLedOn[i] == true) {
+      FillLEDsFromPaletteColors(startIndex + (i*28), rainbow_gp, i, true);
       if(pirTurnedOnTimeInMs[i] == 0) {
         Serial.print("Turned cube on ");
         Serial.println(i);
@@ -204,6 +292,7 @@ void loop(){
     isEndOfCourseAnimation = true;
     endOfCourseAnimationStartMs = millis();
     animationPallete = getRandomPallete();
+    Serial.println("End of course animation");
   }
 
   FastLED.show();
@@ -215,16 +304,20 @@ void checkPir(int index) {
   if (val == HIGH) {
     if (pirStates[index] == LOW) {
       // we have just turned on
-      Serial.print(index);
-      Serial.println(" Motion detected!");
+      if(!isLedOn[index]) {
+        Serial.print(index);
+        Serial.println(" Motion detected!");
+      }
       // We only want to print on the output change, not state
       pirStates[index] = HIGH;
      }
   } else {
     if (pirStates[index] == HIGH){
       // we have just turned of
-      Serial.print(index);
-      Serial.println(" Motion ended!");
+      if(isLedOn[index]) {
+        Serial.print(index);
+        Serial.println(" Motion ended!");
+      }
       // We only want to print on the output change, not state
       pirStates[index] = LOW;
     }
@@ -246,6 +339,7 @@ bool checkAndPlayRedButtonMode(uint8_t colorIndex, unsigned long time) {
   }else {
     isEndOfCourseAnimation = true;
     endOfCourseAnimationStartMs = millis();
+    Serial.println("End of course animation");
     return false; //So the code will contine to end of course animation
   }
 
@@ -267,26 +361,27 @@ bool isReadRedButtonOn() {
   return true;
 }
 
+uint8_t ledStartLocation;
 void FillLEDsFromPaletteColors(uint8_t colorIndex, CRGBPalette16 currentPalette, uint8_t stripIndex, bool isFullPattern)
 {
-  currentAnimationPerLed[stripIndex]++;
+  //currentAnimationPerLed[stripIndex]+=1;
   //isFullPattern = true;
   // Map the cube - leds from one side and the other side
-  if(stripIndex < (NUM_OF_CUBES / 2) ) {
+  if(stripIndex < NUM_OF_LEDS_PER_SIDE ) {
     currentArr = ledsFirst;
   }else {
     currentArr = ledsSecond;
   }
-  uint8_t ledStartLocation = mapLedToPir[stripIndex];
-  for( int i = 0; i < NUM_LEDS_PER_STRIP; i++) {
+  ledStartLocation = mapLedToPir[stripIndex];
+  for( uint8_t i = 0; i < NUM_LEDS_PER_STRIP; i++) {
     if(isFullPattern) {
-      currentArr[ledStartLocation + i] = ColorFromPalette( currentPalette, currentAnimationPerLed[stripIndex] + colorIndex, BRIGHTNESS);
+      currentArr[ledStartLocation + i] = ColorFromPalette( currentPalette, colorIndex, BRIGHTNESS);
     }else {
-      currentArr[ledStartLocation + i] = CRGB::Purple;
+      currentArr[ledStartLocation + i] = cubeColors[stripIndex];//CRGB::Purple;
     }
     colorIndex += 1; //TODO: check this
   }
-  delay(END_OF_COURSE_DELAY);
+  delay(DELAY_MAIN_LOOP);
   //Serial.println("End of Fill leds");
 }
 
@@ -294,6 +389,7 @@ void FillLEDsFromPaletteColors(uint8_t colorIndex, CRGBPalette16 currentPalette,
 void checkIfStripShouldGoOff(unsigned long time, int stripIndex) {
   //TODO
   if(time - pirTurnedOnTimeInMs[stripIndex] > TURN_CUBE_OFF_AFTER_MS) {
+    isLedOn[stripIndex] = false;
     pirTurnedOnTimeInMs[stripIndex] = 0;
     Serial.print("Turning cube off ");
     Serial.println(stripIndex);
@@ -307,12 +403,10 @@ void checkIfStripShouldGoOff(unsigned long time, int stripIndex) {
     for(int i=0;i<NUM_LEDS_PER_STRIP;i++) {
       currentArr[ledStartLocation + i] = CRGB::Black;
     }
-    isLedOn[stripIndex] = false;
   }
-  //Serial.println("End Check strip");
 }
 
-
+int colorIndexEndCourse = 1;
 bool checkAndSetEndOfCourseAnimation(unsigned long time) {
   if(!isEndOfCourseAnimation) {
     return false;
@@ -324,11 +418,65 @@ bool checkAndSetEndOfCourseAnimation(unsigned long time) {
 
     for(int i=0;i<NUM_OF_CUBES;i++) {
       isLedOn[i] = true;
+      pirTurnedOnTimeInMs[i] = millis() - 50000;
     }
   }
-  
-  for(int i=0;i<NUM_OF_CUBES;i++) {
-    FillLEDsFromPaletteColors(startIndex, animationPallete, i, true);
+
+   if(time - endOfCourseAnimationStartMs < 2000) {
+    for(int stripIndex=0; stripIndex<NUM_OF_CUBES; stripIndex++) {
+      uint8_t ledToStartFrom = mapLedToPir[stripIndex];
+      if(stripIndex < NUM_OF_LEDS_PER_SIDE ) {
+        currentArr = ledsFirst;
+      }else {
+        currentArr = ledsSecond;
+      }
+      for(int i=0;i<NUM_LEDS_PER_STRIP;i++) {
+        currentArr[i + mapLedToPir[stripIndex]] = CRGB::Black;
+      }
+      delay(70);
+      FastLED.show();
+      for(uint8_t i=0;i< NUM_LEDS_PER_STRIP;i++) {
+        currentArr[i + ledToStartFrom] = cubeColors[stripIndex];
+      }
+      FastLED.show();
+      delay(200);
+      for(int i=0;i<NUM_LEDS_PER_STRIP;i++) {
+        currentArr[i + mapLedToPir[stripIndex]] = CRGB::Black;
+      }
+      delay(120);
+      FastLED.show();
+    }
+  }else if(time - endOfCourseAnimationStartMs < 8000) {
+    for(uint8_t stripIndex=0; stripIndex<NUM_OF_CUBES; stripIndex++) {
+      uint8_t ledToStartFrom = mapLedToPir[stripIndex];
+      uint8_t stripIndex2 = NUM_OF_CUBES - stripIndex - 1;
+      if(stripIndex < NUM_OF_LEDS_PER_SIDE ) { currentArr = ledsFirst; }else { currentArr = ledsSecond; }
+      if(stripIndex2 < NUM_OF_LEDS_PER_SIDE ) { currentArr2 = ledsFirst; }else { currentArr2 = ledsSecond; }
+      
+      for(uint8_t i=0;i< NUM_LEDS_PER_STRIP;i++) {
+        currentArr[i + ledToStartFrom] = cubeColors[stripIndex];
+        currentArr2[i + ledToStartFrom] = cubeColors[stripIndex2];
+      }
+      FastLED.show();
+      delay(200);
+      for(int i=0;i<NUM_LEDS_PER_STRIP;i++) {
+        currentArr[i + mapLedToPir[stripIndex]] = CRGB::Black;
+        currentArr2[i + mapLedToPir[stripIndex]] = CRGB::Black;
+      }
+      delay(50);
+      FastLED.show();
+    }
+     
+//  }else if(time - endOfCourseAnimationStartMs < 13500) {
+//    for(int i=0;i<NUM_OF_CUBES;i++) {
+//      FillLEDsFromPaletteColors(startIndex, Geek_Black_White, i, true);
+//    }
+//  }
+  } else {
+      //FastLED.setBrightness( max(startIndex * abs(sin(startIndex*360/255*M_PI/180)), 10));
+    for(int i=0;i<NUM_OF_CUBES;i++) {
+      FillLEDsFromPaletteColors(startIndex + (i*28), rainbow_gp, i, true);
+    }
   }
 
   FastLED.show();
