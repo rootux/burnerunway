@@ -20,10 +20,9 @@ class Burnerunway(object):
     self.ser = None
     pygame.mixer.init()
     self.currentEffectCount = 0
-    self.music = None #Sound("/home/pi/burnerunway/music/on_the_catwalk.wav")
-    self.effect1 = None #Sound("/home/pi/burnerunway/music/work_it_baby.wav")
+    self.music = None
+    self.effect1 = None
     self.channel = None
-    self.allMusic = []
     self.allSoundEffects = self.getAbsoluteFiles(SOUND_EFFECTS_PATH)
     self.allMusic = self.getAbsoluteFiles(MUSIC_PATH)
     print ('Init successfully. Effects: {} Sounds: {}'.format(len(self.allSoundEffects), len(self.allMusic)))
@@ -56,15 +55,20 @@ class Burnerunway(object):
         self.currentEffectCount+=1
         if not (self.channel and self.channel.get_busy()):
           print "Playing music"
-          self.music = random.choice(allMusic)
+ 	  randomMusic = random.choice(self.allMusic)
+          self.music = Sound(randomMusic)
+	  print "Playing music {}".format(randomMusic)
           self.channel = self.music.play()
         
         if(self.currentEffectCount % PLAY_EFFECT_EACH == 0):
-          self.effect1 = random.choice(allSoundEffects)
+          randomSoundEffect = random.choice(self.allSoundEffects)
+          print "Playing sound effect {}".format(randomSoundEffect)
+          self.effect1 = Sound(randomSoundEffect)
           self.effect1.play()
 
       print line
     except (SerialException, portNotOpenError) as e:
+      print e
       print "Oops. probably arduino got disconnected. sleeping for 0.5 second and retrying"
       print e
       time.sleep(0.5)
