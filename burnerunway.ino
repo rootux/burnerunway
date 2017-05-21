@@ -208,7 +208,7 @@ void setup() {
   setupPirs();
   Serial.print(NUM_OF_CUBES);
   Serial.println(" Sensors started");
-  //pinMode(RED_BTN_PIN, INPUT);
+  pinMode(RED_BTN_PIN, INPUT);
   Serial.print(NUM_OF_CUBES);
   Serial.println(" All Started");
   animationPallete = getRandomPallete();
@@ -259,10 +259,10 @@ void loop(){
    startIndex = startIndex + 1; /* motion speed */
    //TODO - perhaps this line instead 
    //static uint8_t startIndex = 0;
-//  if(checkAndPlayRedButtonMode(startIndex, time)) {
-//    return;
-//  }
-//
+  if(checkAndPlayRedButtonMode(startIndex, time)) {
+    return;
+  }
+
   if(checkAndSetEndOfCourseAnimation(time)) {
     return;
   }
@@ -292,7 +292,7 @@ void loop(){
     isEndOfCourseAnimation = true;
     endOfCourseAnimationStartMs = millis();
     animationPallete = getRandomPallete();
-    Serial.println("End of course animation");
+    Serial.println("Started end of course animation");
   }
 
   FastLED.show();
@@ -333,9 +333,7 @@ bool checkAndPlayRedButtonMode(uint8_t colorIndex, unsigned long time) {
   if(time - redButtonModeStartMs < (NUM_OF_CUBES * RED_BTN_ANIMATE_TIME_PER_CUBE)) {
     //Cube animation
     int cubeToAnimate = (int)((time - redButtonModeStartMs) / RED_BTN_ANIMATE_TIME_PER_CUBE);
-    for(int i=0;i<NUM_OF_CUBES;i++) {
-      FillLEDsFromPaletteColors(colorIndex, animationPallete, cubeToAnimate, true);
-    }
+    FillLEDsFromPaletteColors(colorIndex, rainbow_gp, cubeToAnimate, true);
   }else {
     isEndOfCourseAnimation = true;
     endOfCourseAnimationStartMs = millis();
@@ -350,13 +348,12 @@ bool checkAndPlayRedButtonMode(uint8_t colorIndex, unsigned long time) {
 
 bool isReadRedButtonOn() {
   int val = digitalRead(RED_BTN_PIN);
-  if(val == LOW) {
+  if(val == HIGH) {
     return false;
   }
 
   Serial.println("Red button!");
   isRedButtonPressed = true;
-  animationPallete = getRandomPallete();
   redButtonModeStartMs = millis();
   return true;
 }
@@ -415,6 +412,7 @@ bool checkAndSetEndOfCourseAnimation(unsigned long time) {
   if( (time - endOfCourseAnimationStartMs) > END_OF_COURSE_ANIMATION_LENGTH) {
     isEndOfCourseAnimation = false;
     isRedButtonPressed = false; //In case the red button triggerd the animation
+    Serial.println("Ended end of course animation");
 
     for(int i=0;i<NUM_OF_CUBES;i++) {
       isLedOn[i] = true;
@@ -493,5 +491,6 @@ CRGBPalette16 getRandomPallete() {
       return PURPLE_UNICORN;
   }
 }
+
 
 
