@@ -10,6 +10,7 @@ We're using https://github.com/pyserial/pyserial to communicate between the Pi a
 
 ## Pi
 The pi code know to recover in case the arduino got disconnect and connected so the app should have a 100% Uptime
+If no signal is received in 30 seconds - the music shuts off
 
 ### Pi setup
 The pi should run RASPBIAN JESSIE WITH PIXEL so that the sound library pygame would be already installed
@@ -35,8 +36,4 @@ sudo update-rc.d superscript defaults
 sudo nano ~/.config/lxsession/LXDE-pi/autostart
 # Add this as last line
 @python /home/pi/burnerunway/burnerunwaypi.py
-
-sudo vim /etc/rc.local
-# Add this line to the end before the exit 0
-python /home/pi/burnerunway/burnerunwaypi.py
 ```
